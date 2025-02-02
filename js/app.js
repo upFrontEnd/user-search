@@ -1,72 +1,24 @@
+import { getUsers } from "./fetchUsers.js";
+import { createUserList } from "./renderUsers.js";
+import { filterData } from "./filterUsers.js";
+
 const searchInput = document.querySelector("#search");
 const searchResult = document.querySelector(".table-results");
 
-let dataArray;
+let dataArray = [];
 
-async function getUsers() {
-  const res = await fetch("https://randomuser.me/api/?nat=fr&results=50");
-
-  const { results } = await res.json();
-
-  dataArray = orderList(results);
-  createUserList(dataArray);
-}
-getUsers();
-
-// Compare les lettres et les trient en fonction de leur key code
-function orderList(data) {
-  const orderedData = data.sort((a, b) => {
-    if (a.name.last.toLowerCase() < b.name.last.toLowerCase()) {
-      return -1;
-    }
-    if (a.name.last.toLowerCase() > b.name.last.toLowerCase()) {
-      return 1;
-    }
-    return 0;
-  });
-
-  return orderedData;
+async function init() {
+  dataArray = await getUsers();
+  if (dataArray.length > 0) {
+    createUserList(dataArray, searchResult);
+  } else {
+    searchResult.innerHTML =
+      "<p>Une erreur est survenue, veuillez réessayer.</p>";
+  }
 }
 
-// Affichage des données
-function createUserList(usersList) {
-  usersList.forEach((user) => {
-    const listItem = document.createElement("div");
-    listItem.setAttribute("class", "table-item");
+searchInput.addEventListener("input", (e) =>
+  filterData(e, dataArray, searchResult)
+);
 
-    listItem.innerHTML = `
-      <div class="container-img">
-        <img src=${user.picture.medium} alt="">
-        <p class="name">${user.name.last} ${user.name.first}</p>
-      </div>
-      <p class="email">${user.email}</p>
-      <p class="phone">${user.phone}</p>`;
-
-    searchResult.appendChild(listItem);
-  });
-}
-
-// Recherche
-searchInput.addEventListener("input", filterData);
-
-function filterData(e) {
-  searchResult.innerHTML = "";
-
-  const searchedString = e.target.value.toLowerCase().replace(/\s/g, "");
-
-  const filteredArr = dataArray.filter(
-    (el) =>
-      el.name.first.toLowerCase().includes(searchedString) ||
-      el.name.last.toLowerCase().includes(searchedString) ||
-      `${el.name.last + el.name.first}`
-        .toLowerCase()
-        .replace(/\s/g, "")
-        .includes(searchedString) ||
-      `${el.name.first + el.name.last}`
-        .toLowerCase()
-        .replace(/\s/g, "")
-        .includes(searchedString)
-  );
-
-  createUserList(filteredArr);
-}
+init();
