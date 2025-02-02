@@ -11,7 +11,6 @@ async function getUsers() {
   dataArray = orderList(results);
   createUserList(dataArray);
 }
-
 getUsers();
 
 // Compare les lettres et les trient en fonction de leur key code
